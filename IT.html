@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            font-size: 32px;
+            color: #2575fc;
+            margin-bottom: 20px;
+            font-weight: 600;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* User Form */
+        #user-form input, #user-form select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease, transform 0.2s ease;
+        }
+
+        #user-form input:focus, #user-form select:focus {
+            border-color: #2575fc;
+            outline: none;
+            transform: scale(1.02);
+        }
+
+        #user-form button {
+            background-color: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            animation: pulse 2s infinite;
+        }
+
+        #user-form button:hover {
+            background-color: #1a5bbf;
+            transform: translateY(-2px);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Quiz Container */
+        #quiz-container {
+            display: none;
+        }
+
+        #step-indicator {
+            font-size: 18px;
+            font-weight: bold;
+            color: #6a11cb;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        #question {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .options label {
+            display: block;
+            margin: 10px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .options label:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background-color: #e6f0ff;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        /* Buttons */
+        .buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background-color: #2575fc;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #1a5bbf;
+            transform: translateY(-2px);
+        }
+
+        /* Review Container */
+        #review-container {
+            display: none;
+            text-align: left;
+            margin-top: 20px;
+            max-height: 400px; /* Set a max height for the review container */
+            overflow-y: auto; /* Enable vertical scrolling */
+            padding-right: 10px; /* Add padding to avoid scrollbar overlap */
+        }
+
+        .review-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .review-card h4 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .review-card p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        .user-answer {
+            color: #ff6666; /* Light red for incorrect answers */
+        }
+
+        .user-answer.correct {
+            color: #00c851; /* Green for correct answers */
+        }
+
+        .correct-answer {
+            color: #00c851; /* Green for correct answers */
+        }
+
+        /* Countdown Timer */
+        #countdown {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffc107;
+            margin: 20px 0;
+            animation: fade 1s infinite alternate;
+        }
+
+        @keyframes fade {
+            from { opacity: 1; }
+            to { opacity: 0.5; }
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #6a11cb;
+            transition: width 0.3s ease;
+        }
+
+        /* Final Score */
+        #final-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6a11cb;
+            margin: 20px 0;
+            animation: bounce 1s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            animation: confetti-fall 2s ease-in-out infinite;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(720deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Interactive Quiz</h2>
+        
+        <!-- User Form -->
+        <div id="user-form">
+            <input type="text" id="name" placeholder="Enter your name" required>
+            <input type="email" id="email" placeholder="Enter your email" required>
+            <input type="text" id="phone" placeholder="Enter your phone number (10 digits)" required>
+            <select id="genre">
+                <option value="">Select a genre</option>
+                <option value="gk">General Knowledge</option>
+                <option value="music">Music</option>
+                <option value="history">Indian History</option>
+                <option value="science">Science</option>
+                <option value="computerScience">Computer Science</option>
+            </select>
+            <button onclick="validateAndStartQuiz()">Start Quiz</button>
+        </div>
+
+        <!-- Countdown Timer -->
+        <div id="countdown" style="display: none;">Starting in: <span id="countdown-timer">3</span> seconds</div>
+
+        <!-- Quiz Container -->
+        <div id="quiz-container" class="question-container">
+            <div id="step-indicator">Question 1 of 10</div>
+            <h3 id="question"></h3>
+            <div id="options" class="options"></div>
+            <div class="buttons">
+                <button onclick="prevQuestion()" id="prevBtn" style="display: none;">Previous</button>
+                <button onclick="nextQuestion()" id="nextBtn">Next</button>
+                <button onclick="submitQuiz()" id="submitBtn" style="display:none;">Submit</button>
+            </div>
+        </div>
+
+        <!-- Final Score -->
+        <div id="final-score"></div>
+
+        <!-- Review Button (Initially Hidden) -->
+        <div id="review-button-container" style="display: none; margin-top: 20px;">
+            <button onclick="showReview()">Review Quiz</button>
+            <button onclick="playAgain()">Play Another Quiz</button>
+        </div>
+
+        <!-- Review Container -->
+        <div id="review-container">
+            <h3>Review Answers</h3>
+            <div id="review-list"></div>
+            <button onclick="playAgain()">Play Another Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        let questions = {
+            gk: [
+                { question: "What is the capital of France?", options: ["Paris", "London", "Berlin", "Madrid"], correct: "Paris" },
+                { question: "Which planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], correct: "Mars" },
+                { question: "Who wrote 'Hamlet'?", options: ["Shakespeare", "Dickens", "Hemingway", "Austen"], correct: "Shakespeare" },
+                { question: "What is the largest ocean?", options: ["Atlantic", "Indian", "Arctic", "Pacific"], correct: "Pacific" },
+                { question: "Which country is famous for the Great Wall?", options: ["India", "USA", "China", "Russia"], correct: "China" },
+                { question: "How many continents are there?", options: ["5", "6", "7", "8"], correct: "7" },
+                { question: "Which is the longest river?", options: ["Amazon", "Nile", "Yangtze", "Mississippi"], correct: "Nile" },
+                { question: "What is the capital of Japan?", options: ["Tokyo", "Seoul", "Beijing", "Bangkok"], correct: "Tokyo" },
+                { question: "Who discovered gravity?", options: ["Newton", "Einstein", "Galileo", "Tesla"], correct: "Newton" },
+                { question: "Which gas do plants absorb?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], correct: "Carbon Dioxide" }
+            ],
+            music: [
+                { question: "Who is known as the 'King of Pop'?", options: ["Michael Jackson", "Elvis Presley", "Madonna", "Prince"], correct: "Michael Jackson" },
+                { question: "Which band wrote the song 'Bohemian Rhapsody'?", options: ["The Beatles", "Queen", "Pink Floyd", "Led Zeppelin"], correct: "Queen" },
+                { question: "What is the name of Taylor Swift's debut album?", options: ["Fearless", "1989", "Taylor Swift", "Red"], correct: "Taylor Swift" },
+                { question: "Which instrument is Yo-Yo Ma famous for playing?", options: ["Violin", "Cello", "Piano", "Flute"], correct: "Cello" },
+                { question: "Who composed the 'Four Seasons'?", options: ["Mozart", "Beethoven", "Vivaldi", "Bach"], correct: "Vivaldi" },
+                { question: "Which singer is known for the hit 'Shape of You'?", options: ["Ed Sheeran", "Justin Bieber", "Shawn Mendes", "Bruno Mars"], correct: "Ed Sheeran" },
+                { question: "What is the highest female singing voice?", options: ["Soprano", "Alto", "Tenor", "Bass"], correct: "Soprano" },
+                { question: "Which band is known for the song 'Hotel California'?", options: ["The Eagles", "Fleetwood Mac", "The Rolling Stones", "The Doors"], correct: "The Eagles" },
+                { question: "Who is the lead singer of the band Coldplay?", options: ["Chris Martin", "Thom Yorke", "Bono", "Brandon Flowers"], correct: "Chris Martin" },
+                { question: "Which genre is Louis Armstrong associated with?", options: ["Jazz", "Rock", "Classical", "Hip-Hop"], correct: "Jazz" }
+            ],
+            history: [
+                { question: "Who was the first Prime Minister of India?", options: ["Jawaharlal Nehru", "Mahatma Gandhi", "Indira Gandhi", "Rajendra Prasad"], correct: "Jawaharlal Nehru" },
+                { question: "In which year did India gain independence?", options: ["1945", "1947", "1950", "1935"], correct: "1947" },
+                { question: "Who is known as the 'Father of the Indian Constitution'?", options: ["B.R. Ambedkar", "Mahatma Gandhi", "Jawaharlal Nehru", "Sardar Patel"], correct: "B.R. Ambedkar" },
+                { question: "Which battle marked the beginning of British rule in India?", options: ["Battle of Plassey", "Battle of Panipat", "Battle of Haldighati", "Battle of Buxar"], correct: "Battle of Plassey" },
+                { question: "Who was the first woman Prime Minister of India?", options: ["Indira Gandhi", "Sonia Gandhi", "Sarojini Naidu", "Pratibha Patil"], correct: "Indira Gandhi" },
+                { question: "Which Mughal emperor built the Taj Mahal?", options: ["Akbar", "Shah Jahan", "Aurangzeb", "Jahangir"], correct: "Shah Jahan" },
+                { question: "Who led the Dandi March?", options: ["Mahatma Gandhi", "Subhas Chandra Bose", "Bhagat Singh", "Jawaharlal Nehru"], correct: "Mahatma Gandhi" },
+                { question: "Which ancient Indian text is known as the 'Song of the Lord'?", options: ["Ramayana", "Mahabharata", "Bhagavad Gita", "Upanishads"], correct: "Bhagavad Gita" },
+                { question: "Who was the first President of India?", options: ["Rajendra Prasad", "Jawaharlal Nehru", "Sardar Patel", "B.R. Ambedkar"], correct: "Rajendra Prasad" },
+                { question: "Which dynasty built the Khajuraho temples?", options: ["Gupta", "Chola", "Chandela", "Pallava"], correct: "Chandela" }
+            ],
+            science: [
+                { question: "What is the chemical symbol for water?", options: ["H2O", "CO2", "O2", "NaCl"], correct: "H2O" },
+                { question: "Which planet is closest to the Sun?", options: ["Earth", "Venus", "Mercury", "Mars"], correct: "Mercury" },
+                { question: "What is the hardest natural substance on Earth?", options: ["Gold", "Iron", "Diamond", "Graphite"], correct: "Diamond" },
+                { question: "What is the speed of light?", options: ["300,000 km/s", "150,000 km/s", "450,000 km/s", "600,000 km/s"], correct: "300,000 km/s" },
+                { question: "Which gas is most abundant in the Earth's atmosphere?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"], correct: "Nitrogen" },
+                { question: "What is the unit of electrical resistance?", options: ["Ohm", "Volt", "Ampere", "Watt"], correct: "Ohm" },
+                { question: "Who developed the theory of relativity?", options: ["Isaac Newton", "Albert Einstein", "Stephen Hawking", "Galileo Galilei"], correct: "Albert Einstein" },
+                { question: "What is the atomic number of carbon?", options: ["6", "12", "14", "8"], correct: "6" },
+                { question: "Which element is known as the 'building block of life'?", options: ["Carbon", "Oxygen", "Hydrogen", "Nitrogen"], correct: "Carbon" },
+                { question: "What is the process by which plants make their food?", options: ["Photosynthesis", "Respiration", "Transpiration", "Fermentation"], correct: "Photosynthesis" }
+            ],
+            computerScience: [
+                { question: "What does CPU stand for?", options: ["Central Processing Unit", "Computer Processing Unit", "Communication Process Unit", "Command Process Unit"], correct: "Central Processing Unit" },
+                { question: "Which language is used for web development?", options: ["Python", "Java", "HTML", "C++"], correct: "HTML" },
+                { question: "What is the binary equivalent of the decimal number 10?", options: ["1010", "1001", "1100", "1111"], correct: "1010" },
+                { question: "Which company developed JavaScript?", options: ["Microsoft", "Google", "Netscape", "Apple"], correct: "Netscape" },
+                { question: "What is the full form of RAM?", options: ["Random Access Memory", "Read-Only Memory", "Random Active Memory", "Read Access Memory"], correct: "Random Access Memory" },
+                { question: "Which protocol is used for sending emails?", options: ["HTTP", "FTP", "SMTP", "TCP"], correct: "SMTP" },
+                { question: "What is the main function of a compiler?", options: ["Execute code", "Debug code", "Translate code", "Optimize code"], correct: "Translate code" },
+                { question: "Which data structure uses LIFO (Last In, First Out)?", options: ["Queue", "Stack", "Array", "Linked List"], correct: "Stack" },
+                { question: "What is the default port for HTTP?", options: ["80", "443", "8080", "21"], correct: "80" },
+                { question: "Which programming language is known for its use in AI?", options: ["Python", "Java", "C++", "Ruby"], correct: "Python" }
+            ]
+        };
+
+        let currentQuestionIndex = 0;
+        let selectedAnswers = {};
+        let quizQuestions = [];
+        let countdownTimer;
+
+        function validateAndStartQuiz() {
+            let name = document.getElementById("name").value.trim();
+            let email = document.getElementById("email").value.trim();
+            let phone = document.getElementById("phone").value.trim();
+            let genre = document.getElementById("genre").value;
+
+            if (!name || name.length < 3 || !/^[a-zA-Z\s]+$/.test(name)) {
+                alert("Please enter a valid name (at least 3 characters).");
+                return;
+            }
+            if (!email.includes("@") || !email.includes(".")) {
+                alert("Please enter a valid email.");
+                return;
+            }
+            if (!/^[6-9]\d{9}$/.test(phone)) {
+                alert("Please enter a valid 10-digit Indian phone number starting with 6,7,8,or 9.");
+                return;
+            }
+            if (isSeries(phone) || isReverseSeries(phone)) {
+                alert("The phone number should not be in a series or reverse series.");
+                return;
+            }
+            if (!genre) {
+                alert("Please select a genre.");
+                return;
+            }
+
+            // Hide the form and show countdown
+            document.getElementById("user-form").style.display = "none";
+            document.getElementById("countdown").style.display = "block";
+            startCountdown();
+        }
+
+        function isSeries(phone) {
+            let series = '0123456789';
+            return phone === series || phone === series.split('').reverse().join('');
+        }
+
+        function isReverseSeries(phone) {
+            let reverseSeries = '9876543210';
+            return phone === reverseSeries;
+        }
+
+        function startCountdown() {
+            let countdown = 3;
+            document.getElementById("countdown-timer").textContent = countdown;
+            countdownTimer = setInterval(() => {
+                countdown--;
+                document.getElementById("countdown-timer").textContent = countdown;
+                if (countdown < 0) {
+                    clearInterval(countdownTimer);
+                    document.getElementById("countdown").style.display = "none";
+                    startQuiz();
+                }
+            }, 1000);
+        }
+
+        function startQuiz() {
+            quizQuestions = questions[document.getElementById("genre").value].sort(() => Math.random() - 0.5);
+            document.getElementById("quiz-container").style.display = "block";
+            currentQuestionIndex = 0;
+            selectedAnswers = {};
+            updateStepIndicator();
+            loadQuestion();
+        }
+
+        function updateStepIndicator() {
+            document.getElementById("step-indicator").textContent = `Question ${currentQuestionIndex + 1} of ${quizQuestions.length}`;
+        }
+
+        function loadQuestion() {
+            let questionData = quizQuestions[currentQuestionIndex];
+            document.getElementById("question").textContent = questionData.question;
+            let optionsHtml = "";
+            questionData.options.forEach((option, index) => {
+                optionsHtml += `
+                    <label>
+                        <input type="radio" name="option" value="${option}" onclick="selectAnswer('${option}')" ${selectedAnswers[currentQuestionIndex] === option ? "checked" : ""}>
+                        ${option}
+                    </label>
+                `;
+            });
+            document.getElementById("options").innerHTML = optionsHtml;
+
+            // Update step indicator
+            updateStepIndicator();
+
+            // Hide previous button for the first question
+            document.getElementById("prevBtn").style.display = currentQuestionIndex === 0 ? "none" : "inline-block";
+            document.getElementById("nextBtn").style.display = currentQuestionIndex === quizQuestions.length - 1 ? "none" : "inline-block";
+            document.getElementById("submitBtn").style.display = currentQuestionIndex === quizQuestions.length - 1 ? "inline-block" : "none";
+        }
+
+        function selectAnswer(answer) {
+            selectedAnswers[currentQuestionIndex] = answer;
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        function submitQuiz() {
+            let correctAnswers = 0;
+            quizQuestions.forEach((question, index) => {
+                if (selectedAnswers[index] === question.correct) {
+                    correctAnswers++;
+                }
+            });
+            document.getElementById("final-score").textContent = `Your score: ${correctAnswers} / ${quizQuestions.length}`;
+            document.getElementById("quiz-container").style.display = "none";
+            document.getElementById("review-button-container").style.display = "block";
+
+            // Trigger confetti if score is more than 7
+            if (correctAnswers > 7) {
+                triggerConfetti();
+            }
+        }
+
+        function showReview() {
+            let reviewHtml = "";
+            quizQuestions.forEach((question, index) => {
+                const userAnswer = selectedAnswers[index] || "Not answered";
+                const isCorrect = userAnswer === question.correct;
+                reviewHtml += `
+                    <div class="review-card">
+                        <h4>${question.question}</h4>
+                        <p class="user-answer ${isCorrect ? 'correct' : ''}">Your answer: ${userAnswer}</p>
+                        ${!isCorrect ? `<p class="correct-answer">Correct answer: ${question.correct}</p>` : ''}
+                    </div>
+                `;
+            });
+            document.getElementById("review-list").innerHTML = reviewHtml;
+            document.getElementById("review-container").style.display = "block";
+            document.getElementById("review-button-container").style.display = "none";
+        }
+
+        function playAgain() {
+            // Reset quiz state
+            document.getElementById("quiz-container").style.display = "none";
+            document.getElementById("review-container").style.display = "none";
+            document.getElementById("review-button-container").style.display = "none";
+            document.getElementById("final-score").textContent = "";
+
+            // Show the user form but retain user details
+            document.getElementById("user-form").style.display = "block";
+            document.getElementById("genre").value = ""; // Reset genre selection
+        }
+
+        function triggerConfetti() {
+            const confettiCount = 100;
+            const container = document.querySelector('.container');
+
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.animationDuration = `${Math.random() * 2 + 1}s`;
+                container.appendChild(confetti);
+            }
+
+            // Remove confetti after animation
+            setTimeout(() => {
+                document.querySelectorAll('.confetti').forEach(confetti => confetti.remove());
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
